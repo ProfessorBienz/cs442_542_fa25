@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "timer.h"
+#include "../timer.h"
 
 #define CACHELINE 128
 #define L1 65536 

@@ -4,7 +4,7 @@
 
 // Import timer.h (the other file I have uploaded) 
 // as it has all of the timing methods
-#include "timer.h"
+#include "../timer.h"
 
 
 // Vector norm method ... just for checking that results are consistent

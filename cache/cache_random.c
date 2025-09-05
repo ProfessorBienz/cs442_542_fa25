@@ -8,7 +8,7 @@
 
 // Import timer.h (the other file I have uploaded) 
 // as it has all of the timing methods
-#include "timer.h"
+#include "../timer.h"
 
 
 // This is the main program

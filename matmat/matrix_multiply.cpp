@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <cmath>
 #include <cstring>
-#include "timer.h"
+#include "../timer.h"
 
 // To compile with and without vectorization (in gcc):
 // gcc -o <executable_name> <file_name> -O1     <--- no vectorization
