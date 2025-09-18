@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <cmath>
-#include <cstring>
 #include "../timer.h"
 
 // To compile with and without vectorization (in gcc):
@@ -16,18 +15,23 @@
 
 
 // Matrix-Matrix Multiplication of Doubles (Double Pointer)
-void matmat(int n, double* A, double*  B, double* C, int n_iter)
+// Test without the restrict variables
+void matmat(int n, double* __restrict__ A, double* __restrict__ B, double* __restrict__ C, int n_iter)
 {
-    memset(C, 0, n * n * sizeof(double));
-    
-    for (int iter = 0; iter < n_iter; iter++) {
-        for (int i = 0; i < n; i++) 
+    double val;
+    for (int iter = 0; iter < n_iter; iter++)
+    {
+        for (int i = 0; i < n; i++)
         {
-            for (int j = 0; j < n; j++) 
+            for (int k = 0; k < n; k++)
+                C[i*n+k] = 0;
+
+            for (int j = 0; j < n; j++)
             {
+                val = A[i*n+j];
                 for (int k = 0; k < n; k++)
                 {
-                    C[i*n + j] += A[i*n + k] * B[k*n + j];
+                    C[i*n+k] += val * B[j*n+k];
                 }
             }
         }
@@ -35,6 +39,10 @@ void matmat(int n, double* A, double*  B, double* C, int n_iter)
 }
 
 
+
+// This program runs matrix matrix multiplication with double pointers
+// Test vectorization improvements for both doubles and floats
+// Try with and without the restrict variables
 int main(int argc, char* argv[])
 {
 
@@ -43,13 +51,16 @@ int main(int argc, char* argv[])
 
     if (argc < 1)
     {
-        printf("Need Matrix Dimemsion n passed as Command Line Arguments (e.g. ./matmat 8)\n");
+        printf("Need Matrix Dimemsion n passed as Command Line Arguments (e.g. ./matmat 8 2)\n");
         return 0;
     }
 
     int n = atoi(argv[1]);
 
-    int n_iter = (n_access / (n*n*n)) + 1;
+    int n_iter;
+    if (n > 100) n_iter = 1;
+    else
+        n_iter = (n_access / (n*n*n));
 
     double* A = (double*)malloc(n*n*sizeof(double));
     double* B = (double*)malloc(n*n*sizeof(double));
@@ -66,12 +77,13 @@ int main(int argc, char* argv[])
     }
 
     // Warm-Up 
-    matmat(n, A, B, C, 1);
+    matmat(n, A, B, C, n_iter);
 
     start = get_time();
     matmat(n, A, B, C, n_iter);
     end = get_time();
     printf("N %d, Time Per MatMat %e\n", n, (end - start)/n_iter);
+
 
 
     free(A);
@@ -81,3 +93,4 @@ int main(int argc, char* argv[])
 
     return 0;
 }
+
