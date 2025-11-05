@@ -172,9 +172,9 @@ void error4(int n)
     MPI_Waitall(num_procs, send_requests.data(), MPI_STATUSES_IGNORE);
     MPI_Waitall(num_procs, recv_requests.data(), MPI_STATUSES_IGNORE);
 
-    for (int i = 0; i < n*num_procs; i++)
-        if (recv_buffer[i] != num_procs)
-            printf("Rank %d, Recv Buffer[%d] = %d (not %d)!\n", rank, i, recv_buffer[i], num_procs);
+    //for (int i = 0; i < n*num_procs; i++)
+    //    if (recv_buffer[i] != num_procs)
+    //        printf("Rank %d, Recv Buffer[%d] = %d (not %d)!\n", rank, i, recv_buffer[i], num_procs);
 
     delete[] data;
 
@@ -197,14 +197,14 @@ void error5(int n)
     {
         MPI_Isend(sendbuf0, n, MPI_DOUBLE, rank+1, tag, MPI_COMM_WORLD, &(req[0]));
         MPI_Isend(sendbuf1, n+1, MPI_DOUBLE, rank+1, tag, MPI_COMM_WORLD, &(req[1]));
+        MPI_Waitall(2, req, MPI_STATUSES_IGNORE);
     }
     else
     {
-        MPI_Irecv(recvbuf1, n+1, MPI_DOUBLE, rank-1, tag, MPI_COMM_WORLD, &(req[0]));
-        MPI_Irecv(recvbuf0, n, MPI_DOUBLE, rank-1, tag, MPI_COMM_WORLD, &(req[1]));
+        MPI_Recv(recvbuf1, n+1, MPI_DOUBLE, rank-1, tag, MPI_COMM_WORLD, &status);
+        MPI_Recv(recvbuf0, n, MPI_DOUBLE, rank-1, tag, MPI_COMM_WORLD, &status);
     }
 
-    MPI_Waitall(2, req, MPI_STATUSES_IGNORE);
 
     delete[] sendbuf0;
     delete[] sendbuf1;
@@ -222,13 +222,14 @@ void logical_bug(int n)
     int N = n;
     n /= num_procs;
     std::vector<double> x(n, 0.5);
-    int sum = 0;
+    double sum = 0;
     for (int i = 0; i < n; i++)
         sum += x[i]*x[i];
-    int total_sum = 0;
+    printf("Sum %f\n", sum);
+    double total_sum = 0;
     MPI_Reduce(&sum, &total_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
-    if (rank == 0) printf("Sum %d\n", total_sum);
+    if (rank == 0) printf("Sum %f\n", total_sum);
 }
 
 
@@ -251,7 +252,7 @@ int main(int argc, char* argv[])
 
     //MPI_Errhandler_set(MPI_COMM_WORLD,MPI_ERRORS_RETURN);
     
-    error4(n);
+    logical_bug(n);
     
 
     MPI_Finalize();
